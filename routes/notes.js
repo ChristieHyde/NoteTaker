@@ -1,6 +1,7 @@
 // Dependencies
 const notes = require('express').Router();
 const { readFromFile, writeToFile, readAndAppend } = require('../helpers/fsUtils.js');
+const uuid = require('../helpers/uuid.js');
 
 // Database file
 const dbFile = './db/db.json';
@@ -20,9 +21,11 @@ notes.post('/', (req, res) =>  {
         return;
     }
     const { title, text } = req.body;
+    console.log(`${title}, ${text}`);
+    const id = uuid();
     if (title && text) {
         const note = {
-            id: uuid(),
+            id,
             title,
             text
         };
@@ -39,6 +42,30 @@ notes.post('/', (req, res) =>  {
     } else {
         res.json('Note could not be saved: Empty fields');
   }
+});
+
+notes.delete('/', (req, res) => {
+    console.log('API delete');
+    console.log(req.body);
+    readFromFile(dbFile).then((data) => {
+        let database = JSON.parse(data);
+        if (!(req.body)) {
+            res.json('Note could not be deleted: Invalid note ID');
+        }
+        let deleteNoteIndex = database.findIndex((element) => element.id == req.body);
+        if (deleteNoteIndex === undefined) {
+            res.json('Note could not be deleted: Note not found');
+        }
+        let newDatabase = database.splice(deleteNoteIndex, 1);
+        writeToFile(dbFile, newDatabase);
+
+        const response = {
+            status: 'success',
+            body: newDatabase,
+        };
+
+        res.json(response);
+    });
 });
 
 module.exports = notes;

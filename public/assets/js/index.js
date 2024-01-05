@@ -1,3 +1,5 @@
+console.log("hello");
+
 let noteForm;
 let noteTitle;
 let noteText;
