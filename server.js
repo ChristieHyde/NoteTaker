@@ -3,7 +3,7 @@ const express = require('express');
 const path = require('path');
 
 // Server port and declaration
-const PORT = 3002;
+const PORT = process.env.PORT || 3002;
 const app = express();
 
 // Middleware for parsing JSON and urlencoded form data
