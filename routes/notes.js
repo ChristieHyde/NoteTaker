@@ -14,7 +14,6 @@ notes.get('/', (req, res) => {
 
 notes.post('/', (req, res) =>  {
     console.log('API post');
-    console.log(req.body);
     // Request body restructuring
     if (!(req.body)) {
         res.json('Note could not be saved: No note found');
@@ -44,24 +43,23 @@ notes.post('/', (req, res) =>  {
   }
 });
 
-notes.delete('/', (req, res) => {
-    console.log('API delete');
-    console.log(req.body);
+notes.delete('/*', (req, res) => {
+    console.log("API delete");
     readFromFile(dbFile).then((data) => {
         let database = JSON.parse(data);
-        if (!(req.body)) {
-            res.json('Note could not be deleted: Invalid note ID');
-        }
-        let deleteNoteIndex = database.findIndex((element) => element.id == req.body);
+        let noteID = req.url.slice(1);
+        let deleteNoteIndex = database.findIndex((element) => element.id == noteID);
         if (deleteNoteIndex === undefined) {
             res.json('Note could not be deleted: Note not found');
         }
-        let newDatabase = database.splice(deleteNoteIndex, 1);
-        writeToFile(dbFile, newDatabase);
+        console.log(database[deleteNoteIndex]);
+        console.log(database);
+        database.splice(deleteNoteIndex, 1);
+        writeToFile(dbFile, database);
 
         const response = {
             status: 'success',
-            body: newDatabase,
+            body: database,
         };
 
         res.json(response);
