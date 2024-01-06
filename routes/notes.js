@@ -7,20 +7,21 @@ const uuid = require('../helpers/uuid.js');
 const dbFile = './db/db.json';
 
 // API ROUTES
+// GET ROUTE
 notes.get('/', (req, res) => {
-    console.log('API get');
+    console.log(`${req.method} called to get all notes`);
     readFromFile(dbFile).then((data) => res.json(JSON.parse(data)));
 });
 
+// POST ROUTE
 notes.post('/', (req, res) =>  {
-    console.log('API post');
+    console.log(`${req.method} called to save a note`);
     // Request body restructuring
     if (!(req.body)) {
         res.json('Note could not be saved: No note found');
         return;
     }
     const { title, text } = req.body;
-    console.log(`${title}, ${text}`);
     const id = uuid();
     if (title && text) {
         const note = {
@@ -29,6 +30,7 @@ notes.post('/', (req, res) =>  {
             text
         };
 
+        // Write the saved note to the dabase file and return success response
         readAndAppend(note, dbFile);
 
         const response = {
@@ -39,29 +41,32 @@ notes.post('/', (req, res) =>  {
         res.json(response);
 
     } else {
+        // Failure response
         res.json('Note could not be saved: Empty fields');
   }
 });
 
+// DELETE ROUTE
 notes.delete('/*', (req, res) => {
-    console.log("API delete");
+    console.log(`${req.method} called to delete a note`);
     readFromFile(dbFile).then((data) => {
+        // Parse note ID and determine the corresponding database index
         let database = JSON.parse(data);
         let noteID = req.url.slice(1);
         let deleteNoteIndex = database.findIndex((element) => element.id == noteID);
         if (deleteNoteIndex === undefined) {
             res.json('Note could not be deleted: Note not found');
         }
-        console.log(database[deleteNoteIndex]);
-        console.log(database);
+
+        // Delete note from database and write to file
         database.splice(deleteNoteIndex, 1);
         writeToFile(dbFile, database);
 
+        // Success response
         const response = {
             status: 'success',
             body: database,
-        };
-
+        }
         res.json(response);
     });
 });
